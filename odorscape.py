@@ -44,9 +44,9 @@ class Canvas(object):
                 if dist <= r:
                     patch[i,j] = (1-(dist/r))*(max - min)
         patch = patch.astype(np.int16)
-        if channel==1:
+        if channel=='1':
             self.channel1[(y-r):(y+r), (x-r):(x+r)] += patch[:,:]
-        if channel==2:
+        if channel=='2':
             self.channel2[(y-r):(y+r), (x-r):(x+r)] += patch[:,:]
 
 

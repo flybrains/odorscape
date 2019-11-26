@@ -15,7 +15,7 @@ Ui_MainWindow, QtBaseClass = uic.loadUiType(mainWindowCreatorFile)
 class CircularSourceConfigWindow(QtWidgets.QDialog):
 	def __init__(self):
 		super().__init__()
-		self.setWindowTitle("Rectangular Source Configuration")
+		self.setWindowTitle("Circular Source Configuration")
 		self.setFixedSize(300, 450)
 
 class CanvasSizeConfigWindow(QtWidgets.QDialog):
@@ -59,7 +59,6 @@ class CanvasSizeConfigWindow(QtWidgets.QDialog):
 		self.got_values.emit(1)
 		self.close()
 		return None
-
 
 class RectangularSourceConfigWindow(QtWidgets.QDialog):
 	got_values = QtCore.pyqtSignal(int)
@@ -134,6 +133,17 @@ class RectangularSourceConfigWindow(QtWidgets.QDialog):
 
 		self.show()
 
+	def store_values(self):
+		self.x = int(self.l1Edit.value())
+		self.y = int(self.l2Edit.value())
+		self.w = int(self.l3Edit.value())
+		self.h = int(self.l4Edit.value())
+		self.max = int(self.l5Edit.value())
+		self.min = int(self.l6Edit.value())
+		self.maxat = str(self.comboBox7.currentText())
+		self.channel = str(self.comboBox8.currentText())
+		self.got_values.emit(1)
+		self.close()
 		return None
 
 class CircularSourceConfigWindow(QtWidgets.QDialog):
@@ -147,7 +157,6 @@ class CircularSourceConfigWindow(QtWidgets.QDialog):
 
 		self.l2 = QtWidgets.QLabel('Origin Y (px)')
 		self.l2Edit = QtWidgets.QSpinBox()
-		self.l2Edit.setMaximum(canvas.h)
 		self.l2Edit.setRange(-int(canvas.h/2),int(canvas.h/2))
 
 		self.l3 = QtWidgets.QLabel('Radius (px)')
@@ -194,18 +203,13 @@ class CircularSourceConfigWindow(QtWidgets.QDialog):
 
 		self.show()
 
-		return None
-
-
 	def store_values(self):
 		self.x = int(self.l1Edit.value())
 		self.y = int(self.l2Edit.value())
-		self.w = int(self.l3Edit.value())
-		self.h = int(self.l4Edit.value())
-		self.max = int(self.l5Edit.value())
-		self.min = int(self.l6Edit.value())
-		self.maxat = str(self.comboBox7.currentText())
-		self.channel = str(self.comboBox8.currentText())
+		self.r = int(self.l3Edit.value())
+		self.max = int(self.l4Edit.value())
+		self.min = int(self.l5Edit.value())
+		self.channel = str(self.comboBox6.currentText())
 		self.got_values.emit(1)
 		self.close()
 		return None
@@ -223,7 +227,10 @@ class Odorscape(QtWidgets.QMainWindow, Ui_MainWindow):
 		self.canvasconfigwindow.got_values.connect(self.displayCanvas)
 		self.rectangularGradientButton.clicked.connect(self.initializeRectBuilder)
 		self.circularGradientButton.clicked.connect(self.initializeCircleBuilder)
+		self.setMouseTracking(True)
 
+	def mouseMoveEvent(self, event):
+		self.label_3.setText('Mouse coords: ( %d : %d )' % (event.x(), event.y()))
 
 	@pyqtSlot(QImage)
 	def setCanvas(self, image):
@@ -269,14 +276,14 @@ class Odorscape(QtWidgets.QMainWindow, Ui_MainWindow):
 		return None
 
 	def addCircularGradient(self):
-		x = self.rectconfigwindow.x
-		y = self.rectconfigwindow.y
-		r = self.rectconfigwindow.r
-		max = self.rectconfigwindow.max
-		min = self.rectconfigwindow.min
-		channel = self.rectconfigwindow.channel
+		x = self.circleconfigwindow.x
+		y = self.circleconfigwindow.y
+		r = self.circleconfigwindow.r
+		max = self.circleconfigwindow.max
+		min = self.circleconfigwindow.min
+		channel = self.circleconfigwindow.channel
 
-		self.canvas.add_circular_gradient(x,y,w,h,max, min, channel, maxat=maxat)
+		self.canvas.add_circular_gradient(x,y,r,max, min, channel)
 		self.canvas.check_and_correct_overlap()
 		self.displayCanvas(init=False)
 		return None

@@ -30,31 +30,21 @@
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
          <widget class="QLabel" name="label">
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>40</height>
+           </size>
+          </property>
           <property name="font">
            <font>
-            <pointsize>24</pointsize>
+            <pointsize>14</pointsize>
            </font>
           </property>
           <property name="text">
-           <string>  Odorscape</string>
+           <string>Odorscape</string>
           </property>
          </widget>
-        </item>
-        <item>
-         <spacer name="verticalSpacer_2">
-          <property name="orientation">
-           <enum>Qt::Vertical</enum>
-          </property>
-          <property name="sizeType">
-           <enum>QSizePolicy::Fixed</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>13</height>
-           </size>
-          </property>
-         </spacer>
         </item>
         <item>
          <widget class="QPushButton" name="circularGradientButton">
@@ -75,22 +65,6 @@
            <string>Create Rectangle Gradient</string>
           </property>
          </widget>
-        </item>
-        <item>
-         <spacer name="verticalSpacer_3">
-          <property name="orientation">
-           <enum>Qt::Vertical</enum>
-          </property>
-          <property name="sizeType">
-           <enum>QSizePolicy::Fixed</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>13</height>
-           </size>
-          </property>
-         </spacer>
         </item>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_9">
@@ -125,6 +99,166 @@
              <number>100000</number>
             </property>
            </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayout_4">
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_10">
+            <item>
+             <widget class="QLabel" name="blueLabel">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>20</width>
+                <height>20</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>20</width>
+                <height>20</height>
+               </size>
+              </property>
+              <property name="cursor">
+               <cursorShape>ArrowCursor</cursorShape>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="label_2">
+              <property name="minimumSize">
+               <size>
+                <width>106</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>106</width>
+                <height>135</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>Air</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="airValLabel">
+              <property name="text">
+               <string>(0)</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_7">
+            <item>
+             <widget class="QLabel" name="greenLabel">
+              <property name="minimumSize">
+               <size>
+                <width>20</width>
+                <height>20</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>20</width>
+                <height>20</height>
+               </size>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="label_5">
+              <property name="minimumSize">
+               <size>
+                <width>106</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>106</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>Odor Channel 1</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="odor1ValLabel">
+              <property name="text">
+               <string>(0)</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_6">
+            <item>
+             <widget class="QLabel" name="label_8">
+              <property name="minimumSize">
+               <size>
+                <width>20</width>
+                <height>20</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>20</width>
+                <height>20</height>
+               </size>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="label_7">
+              <property name="minimumSize">
+               <size>
+                <width>106</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>106</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>Odor Channel 2</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="odor2ValLabel">
+              <property name="text">
+               <string>(0)</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </item>
          </layout>
         </item>
@@ -180,6 +314,9 @@
               <height>700</height>
              </size>
             </property>
+            <property name="cursor">
+             <cursorShape>CrossCursor</cursorShape>
+            </property>
             <property name="text">
              <string/>
             </property>
@@ -227,10 +364,17 @@
          <property name="spacing">
           <number>15</number>
          </property>
-         <item row="0" column="0">
+         <item row="1" column="0">
           <widget class="QPushButton" name="pushButton">
            <property name="text">
             <string>PushButton</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0">
+          <widget class="QLabel" name="label_3">
+           <property name="text">
+            <string>TextLabel</string>
            </property>
           </widget>
          </item>
@@ -284,7 +428,7 @@
   <action name="actionOpenImage">
    <property name="icon">
     <iconset>
-     <normaloff>images/blue-folder-open-image.png</normaloff>images/blue-folder-open-image.png</iconset>
+     <normaloff>../odorscape-master/paint/images/blue-folder-open-image.png</normaloff>../odorscape-master/paint/images/blue-folder-open-image.png</iconset>
    </property>
    <property name="text">
     <string>Open Canvas</string>
@@ -293,7 +437,7 @@
   <action name="actionSaveImage">
    <property name="icon">
     <iconset>
-     <normaloff>images/disk.png</normaloff>images/disk.png</iconset>
+     <normaloff>../odorscape-master/paint/images/disk.png</normaloff>../odorscape-master/paint/images/disk.png</iconset>
    </property>
    <property name="text">
     <string>Save Canvas As</string>
@@ -317,7 +461,7 @@
   <action name="actionNewCanvas">
    <property name="icon">
     <iconset>
-     <normaloff>images/document-image.png</normaloff>images/document-image.png</iconset>
+     <normaloff>../odorscape-master/paint/images/document-image.png</normaloff>../odorscape-master/paint/images/document-image.png</iconset>
    </property>
    <property name="text">
     <string>New Canvas</string>
@@ -329,7 +473,7 @@
    </property>
    <property name="icon">
     <iconset>
-     <normaloff>images/edit-bold.png</normaloff>images/edit-bold.png</iconset>
+     <normaloff>../odorscape-master/paint/images/edit-bold.png</normaloff>../odorscape-master/paint/images/edit-bold.png</iconset>
    </property>
    <property name="text">
     <string>Bold</string>
@@ -344,7 +488,7 @@
    </property>
    <property name="icon">
     <iconset>
-     <normaloff>images/edit-italic.png</normaloff>images/edit-italic.png</iconset>
+     <normaloff>../odorscape-master/paint/images/edit-italic.png</normaloff>../odorscape-master/paint/images/edit-italic.png</iconset>
    </property>
    <property name="text">
     <string>Italic</string>
@@ -359,7 +503,7 @@
    </property>
    <property name="icon">
     <iconset>
-     <normaloff>images/edit-underline.png</normaloff>images/edit-underline.png</iconset>
+     <normaloff>../odorscape-master/paint/images/edit-underline.png</normaloff>../odorscape-master/paint/images/edit-underline.png</iconset>
    </property>
    <property name="text">
     <string>Underline</string>
@@ -371,7 +515,7 @@
    </property>
    <property name="icon">
     <iconset>
-     <normaloff>images/paint-can-color.png</normaloff>images/paint-can-color.png</iconset>
+     <normaloff>../odorscape-master/paint/images/paint-can-color.png</normaloff>../odorscape-master/paint/images/paint-can-color.png</iconset>
    </property>
    <property name="text">
     <string>Fill Shapes?</string>
