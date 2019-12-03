@@ -1,5 +1,6 @@
 import numpy as np
 import cv2
+import os
 
 def convert_canvas_to_bitmap(canvas):
     label = QLabel()
@@ -18,14 +19,19 @@ def save_canvas(canvas, canvas_address):
     np.save(canvas, canvas_address)
     return None
 
+def cache_canvas_data(canvas, revision):
+    np.save(os.path.join(os.getcwd(), 'canvas_data', "{}.npy".format(revision)), canvas)
 
 class Canvas(object):
     def __init__(self, w=1000, h=1000, resolution=2):
         self.w = w
         self.h = h
-        self.airchannel = np.zeros((h, w), dtype=np.int16)
+        self.airchannel = 255*np.ones((h, w), dtype=np.int16)
         self.channel1 = np.zeros((h, w), dtype=np.int16)
         self.channel2 = np.zeros((h, w), dtype=np.int16)
+        self.revision = 1
+        self.canvas = self.build_canvas()
+        cache_canvas_data(self.canvas, self.revision)
 
     def build_canvas(self):
         self.canvas = np.zeros((self.h, self.w, 3))
@@ -37,18 +43,53 @@ class Canvas(object):
 
     def add_circular_gradient(self, x, y, r, max, min, channel):
         patch = np.zeros((2*r, 2*r))
+        lowlimitx = x-r
+        highlimitx = x+r
+        lowlimity = y-r
+        highlimity = y+r
+
+        x_axis = np.linspace(-1, 1, 2*r)[:, None]
+        y_axis = np.linspace(-1, 1, 2*r)[None, :]
+        patch = (1-np.sqrt(x_axis ** 2 + y_axis ** 2))*255
+
         center = np.array([r,r])
         for i in range(2*r):
             for j in range(2*r):
                 dist = np.linalg.norm(np.array([i,j]) - center)
-                if dist <= r:
-                    patch[i,j] = (1-(dist/r))*(max - min)
-        patch = patch.astype(np.int16)
-        if channel=='1':
-            self.channel1[(y-r):(y+r), (x-r):(x+r)] += patch[:,:]
-        if channel=='2':
-            self.channel2[(y-r):(y+r), (x-r):(x+r)] += patch[:,:]
+                if dist >= r-1:
+                    patch[i,j] = 0.
 
+        patch = patch.astype(np.int16)
+
+        # Edge Handling
+        if (x-r)<0:
+            patch = patch[:,(r-x):]
+            lowlimitx = 0
+        if (y-r)<0:
+            patch = patch[(r-y):,:]
+            lowlimity = 0
+
+        if (x+r)>self.w:
+            patch = patch[:,:-(r-(self.w-x))]
+            highlimitx = self.w
+        if (y+r)>self.h:
+            patch = patch[:-(r-(self.h-y)),:]
+            highlimity = self.h
+
+        if channel=='1':
+            self.channel1[lowlimity:highlimity, lowlimitx:highlimitx] += patch[:,:]
+        if channel=='2':
+            self.channel2[lowlimity:highlimity, lowlimitx:highlimitx] += patch[:,:]
+
+    def rollback_canvas(self):
+        if self.revision > 1:
+            temp = np.load(os.path.join(os.getcwd(), 'canvas_data', "{}.npy".format(self.revision-1)))
+            self.airchannel = temp[:,:,0].astype(np.int16)
+            self.channel1 = temp[:,:,1].astype(np.int16)
+            self.channel2 = temp[:,:,2].astype(np.int16)
+            self.canvas = self.build_canvas()
+            self.revision -= 1
+        return self.canvas
 
     def add_square_gradient(self, x, y, w, h, max, min, channel, maxat='Top'):
 
@@ -97,10 +138,12 @@ class Canvas(object):
 
         self.airchannel = 255*np.ones(self.channel1.shape) - (self.channel1 + self.channel2)
 
-        self.build_canvas()
+        # self.build_canvas()
 
-        # cv2.imshow('g', self.canvas)
-        # cv2.waitKey(0)
+        self.revision += 1
+        self.canvas = self.build_canvas()
+        cache_canvas_data(self.canvas, self.revision)
+
 
         return None
 

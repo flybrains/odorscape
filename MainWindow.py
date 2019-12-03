@@ -12,12 +12,6 @@ mainWindowCreatorFile = cwd+"/mainwindow.ui"
 
 Ui_MainWindow, QtBaseClass = uic.loadUiType(mainWindowCreatorFile)
 
-class CircularSourceConfigWindow(QtWidgets.QDialog):
-	def __init__(self):
-		super().__init__()
-		self.setWindowTitle("Circular Source Configuration")
-		self.setFixedSize(300, 450)
-
 class CanvasSizeConfigWindow(QtWidgets.QDialog):
 	got_values = QtCore.pyqtSignal(int)
 	def __init__(self):
@@ -153,15 +147,16 @@ class CircularSourceConfigWindow(QtWidgets.QDialog):
 
 		self.l1 = QtWidgets.QLabel('Origin X (px)')
 		self.l1Edit = QtWidgets.QSpinBox()
-		self.l1Edit.setRange(-int(canvas.w/2),int(canvas.w/2))
+		self.l1Edit.setRange(-int(canvas.w),int(canvas.w))
 
 		self.l2 = QtWidgets.QLabel('Origin Y (px)')
 		self.l2Edit = QtWidgets.QSpinBox()
-		self.l2Edit.setRange(-int(canvas.h/2),int(canvas.h/2))
+		self.l2Edit.setRange(-int(canvas.h),int(canvas.h))
 
 		self.l3 = QtWidgets.QLabel('Radius (px)')
 		self.l3Edit = QtWidgets.QSpinBox()
-		self.l3Edit.setRange(0,int(canvas.w/2))
+		self.l3Edit.setMaximum(100000)
+		self.l3Edit.setMinimum(0)
 
 		self.l4 = QtWidgets.QLabel('Max Value')
 		self.l4Edit = QtWidgets.QSpinBox()
@@ -223,14 +218,30 @@ class Odorscape(QtWidgets.QMainWindow, Ui_MainWindow):
 		self.setFixedSize(self.size())
 		self.canvas = Canvas()
 		self.actionNewCanvas.triggered.connect(self.initializeCanvas)
+		# self.actionOpenCanvas.triggered.connect(self.loadCanvas)
+		# self.actionSaveCanvas.triggered.connect(self.saveCanvas)
 		self.canvasconfigwindow = CanvasSizeConfigWindow()
 		self.canvasconfigwindow.got_values.connect(self.displayCanvas)
 		self.rectangularGradientButton.clicked.connect(self.initializeRectBuilder)
 		self.circularGradientButton.clicked.connect(self.initializeCircleBuilder)
-		self.setMouseTracking(True)
+		self.rollbackPushButton.clicked.connect(self.rollbackCanvas)
+		self.rectangularGradientButton.setDisabled(True)
+		self.circularGradientButton.setDisabled(True)
+		self.rollbackPushButton.setDisabled(True)
 
-	def mouseMoveEvent(self, event):
-		self.label_3.setText('Mouse coords: ( %d : %d )' % (event.x(), event.y()))
+	def initializeCanvas(self):
+		if 'canvas_data' in os.listdir(os.getcwd()):
+			for filename in os.listdir(os.path.join(os.getcwd(),'canvas_data')):
+				os.remove(os.path.join(os.getcwd(), 'canvas_data', filename))
+		else:
+			os.mkdir(os.path.join(os.getcwd(), 'canvas_data'))
+
+		self.rectangularGradientButton.setDisabled(False)
+		self.circularGradientButton.setDisabled(False)
+
+		self.canvasconfigwindow.show()
+
+		return None
 
 	@pyqtSlot(QImage)
 	def setCanvas(self, image):
@@ -242,14 +253,14 @@ class Odorscape(QtWidgets.QMainWindow, Ui_MainWindow):
 		self.canvasLabel.setPixmap(pixmap)
 		self.canvasLabel.show()
 
-	def initializeCanvas(self):
-		self.canvasconfigwindow.show()
-		return None
-
 	def displayCanvas(self, init=True):
 		if init:
 			self.canvas = Canvas(self.canvasconfigwindow.w, self.canvasconfigwindow.h, self.canvasconfigwindow.resolution)
 		self.canvasImage = self.canvas.build_canvas()
+		self.setCanvas(self.canvasImage)
+
+	def rollbackCanvas(self):
+		self.canvasImage = self.canvas.rollback_canvas()
 		self.setCanvas(self.canvasImage)
 
 	def initializeRectBuilder(self, show=False):
@@ -261,6 +272,7 @@ class Odorscape(QtWidgets.QMainWindow, Ui_MainWindow):
 		self.circleconfigwindow.got_values.connect(self.addCircularGradient)
 
 	def addRectangularGradient(self):
+		self.rollbackPushButton.setDisabled(False)
 		x = self.rectconfigwindow.x
 		y = self.rectconfigwindow.y
 		h = self.rectconfigwindow.h
@@ -276,6 +288,7 @@ class Odorscape(QtWidgets.QMainWindow, Ui_MainWindow):
 		return None
 
 	def addCircularGradient(self):
+		self.rollbackPushButton.setDisabled(False)
 		x = self.circleconfigwindow.x
 		y = self.circleconfigwindow.y
 		r = self.circleconfigwindow.r
@@ -287,9 +300,6 @@ class Odorscape(QtWidgets.QMainWindow, Ui_MainWindow):
 		self.canvas.check_and_correct_overlap()
 		self.displayCanvas(init=False)
 		return None
-
-
-
 
 if __name__ == "__main__":
 	app = QtWidgets.QApplication(sys.argv)

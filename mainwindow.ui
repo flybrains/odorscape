@@ -47,6 +47,13 @@
          </widget>
         </item>
         <item>
+         <widget class="Line" name="line_3">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QPushButton" name="circularGradientButton">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
@@ -63,6 +70,27 @@
          <widget class="QPushButton" name="rectangularGradientButton">
           <property name="text">
            <string>Create Rectangle Gradient</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="Line" name="line">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="rollbackPushButton">
+          <property name="text">
+           <string>Undo</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="Line" name="line_2">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
           </property>
          </widget>
         </item>
@@ -406,8 +434,8 @@
      <string>FIle</string>
     </property>
     <addaction name="actionNewCanvas"/>
-    <addaction name="actionOpenImage"/>
-    <addaction name="actionSaveImage"/>
+    <addaction name="actionOpenCanvas"/>
+    <addaction name="actionSaveCanvas"/>
    </widget>
    <addaction name="menuFIle"/>
    <addaction name="menuEdit"/>
@@ -425,7 +453,7 @@
     <string>Clear Image</string>
    </property>
   </action>
-  <action name="actionOpenImage">
+  <action name="actionOpenCanvas">
    <property name="icon">
     <iconset>
      <normaloff>../odorscape-master/paint/images/blue-folder-open-image.png</normaloff>../odorscape-master/paint/images/blue-folder-open-image.png</iconset>
@@ -434,7 +462,7 @@
     <string>Open Canvas</string>
    </property>
   </action>
-  <action name="actionSaveImage">
+  <action name="actionSaveCanvas">
    <property name="icon">
     <iconset>
      <normaloff>../odorscape-master/paint/images/disk.png</normaloff>../odorscape-master/paint/images/disk.png</iconset>
