@@ -42,7 +42,25 @@
            </font>
           </property>
           <property name="text">
-           <string>Odorscape</string>
+           <string>Multiple Odor Controller</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="commonNameLabel">
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>12</height>
+           </size>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>8</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string/>
           </property>
          </widget>
         </item>

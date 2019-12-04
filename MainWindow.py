@@ -1,16 +1,25 @@
 import os
 import sys
 import cv2
+import pickle
 from odorscape import Canvas
 import numpy as np
 from PyQt5.QtCore import pyqtSlot
 from PyQt5 import QtCore, QtGui, QtWidgets, uic
+from PyQt5.QtWidgets import QFileDialog
 from PyQt5.QtGui import QImage, QPixmap
 
 cwd = os.getcwd()
 mainWindowCreatorFile = cwd+"/mainwindow.ui"
 
 Ui_MainWindow, QtBaseClass = uic.loadUiType(mainWindowCreatorFile)
+
+class ErrorMsg(QtWidgets.QMessageBox):
+	def __init__(self, msg, parent=None):
+		super(ErrorMsg, self).__init__(parent)
+		self.setIcon(QtWidgets.QMessageBox.Critical)
+		self.setText(msg)
+		self.setWindowTitle('Error')
 
 class CanvasSizeConfigWindow(QtWidgets.QDialog):
 	got_values = QtCore.pyqtSignal(int)
@@ -218,8 +227,8 @@ class Odorscape(QtWidgets.QMainWindow, Ui_MainWindow):
 		self.setFixedSize(self.size())
 		self.canvas = Canvas()
 		self.actionNewCanvas.triggered.connect(self.initializeCanvas)
-		# self.actionOpenCanvas.triggered.connect(self.loadCanvas)
-		# self.actionSaveCanvas.triggered.connect(self.saveCanvas)
+		self.actionOpenCanvas.triggered.connect(self.loadCanvas)
+		self.actionSaveCanvas.triggered.connect(self.saveCanvas)
 		self.canvasconfigwindow = CanvasSizeConfigWindow()
 		self.canvasconfigwindow.got_values.connect(self.displayCanvas)
 		self.rectangularGradientButton.clicked.connect(self.initializeRectBuilder)
@@ -229,17 +238,57 @@ class Odorscape(QtWidgets.QMainWindow, Ui_MainWindow):
 		self.circularGradientButton.setDisabled(True)
 		self.rollbackPushButton.setDisabled(True)
 
-	def initializeCanvas(self):
+	def initializeCanvasHistory(self):
 		if 'canvas_data' in os.listdir(os.getcwd()):
 			for filename in os.listdir(os.path.join(os.getcwd(),'canvas_data')):
 				os.remove(os.path.join(os.getcwd(), 'canvas_data', filename))
 		else:
 			os.mkdir(os.path.join(os.getcwd(), 'canvas_data'))
 
+		return None
+
+	def initializeCanvas(self):
+		self.initializeCanvasHistory()
 		self.rectangularGradientButton.setDisabled(False)
 		self.circularGradientButton.setDisabled(False)
-
 		self.canvasconfigwindow.show()
+		self.initialized = True
+		return None
+
+
+	def saveCanvas(self):
+		self.canvasSavePath = QFileDialog.getSaveFileName(self, 'Select Save Directory', os.getcwd())
+		self.commonName = self.canvasSavePath[0]
+		self.canvasSavePath = self.canvasSavePath[0]+".pkl"
+
+		if self.initialized==False:
+			msg = 'Must initialize a canvas before saving'
+			self.error = ErrorMsg(msg)
+			self.error.show()
+		else:
+			pickle_out = open(self.canvasSavePath,"wb")
+			pickle.dump(self.canvas, pickle_out)
+			pickle_out.close()
+			self.commonNameLabel.setText(self.commonName)
+		return None
+
+	def loadCanvas(self):
+		fname = QFileDialog.getOpenFileName(self, 'Select Program to Open', os.getcwd())
+		self.openCanvasPath = str(fname[0])
+		pickle_in = open(self.openCanvasPath, "rb")
+		temp = pickle.load(pickle_in)
+		self.canvas = Canvas(temp.w, temp.h, temp.resolution)
+		self.canvas.airchannel = temp.airchannel
+		self.canvas.channel1 = temp.channel1
+		self.canvas.channel2 = temp.channel2
+		self.canvasImage = self.canvas.build_canvas()
+		self.setCanvas(self.canvasImage)
+		self.initializeCanvasHistory()
+		self.rectangularGradientButton.setDisabled(False)
+		self.circularGradientButton.setDisabled(False)
+		self.initialized = True
+		self.commonName = self.openCanvasPath[:-4]
+		self.commonNameLabel.setText(self.commonName)
 
 		return None
 

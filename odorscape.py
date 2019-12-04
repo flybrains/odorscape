@@ -29,6 +29,7 @@ class Canvas(object):
         self.airchannel = 255*np.ones((h, w), dtype=np.int16)
         self.channel1 = np.zeros((h, w), dtype=np.int16)
         self.channel2 = np.zeros((h, w), dtype=np.int16)
+        self.resolution = resolution
         self.revision = 1
         self.canvas = self.build_canvas()
         cache_canvas_data(self.canvas, self.revision)
