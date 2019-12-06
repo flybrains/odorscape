@@ -3,6 +3,7 @@ import sys
 import cv2
 import math
 import pickle
+import time
 from odorscape import Canvas
 import numpy as np
 from PyQt5.QtCore import pyqtSlot
@@ -25,11 +26,10 @@ class ErrorMsg(QtWidgets.QMessageBox):
 
 class CanvasSizeConfigWindow(QtWidgets.QDialog):
 	got_values = QtCore.pyqtSignal(int)
-	def __init__(self):
-		super(CanvasSizeConfigWindow, self).__init__()
+	def __init__(self, parent=None):
+		super(CanvasSizeConfigWindow, self).__init__(parent)
 		self.l1 = QtWidgets.QLabel('Canvas Height (mm)')
 		self.l2 = QtWidgets.QLabel('Canvas Width (mm)')
-		self.l3 = QtWidgets.QLabel('Resolution (dots/mm)')
 		self.pb = QtWidgets.QPushButton()
 		self.l1Edit = QtWidgets.QSpinBox()
 		self.l1Edit.setMaximum(10000000)
@@ -37,9 +37,6 @@ class CanvasSizeConfigWindow(QtWidgets.QDialog):
 		self.l2Edit = QtWidgets.QSpinBox()
 		self.l2Edit.setMaximum(10000000)
 		self.l2Edit.setValue(1000)
-		self.l3Edit = QtWidgets.QSpinBox()
-		self.l3Edit.setMaximum(10)
-		self.l3Edit.setValue(1)
 		self.pb.setText("Set Canvas Size")
 		self.grid = QtWidgets.QGridLayout()
 		self.grid.setSpacing(5)
@@ -47,11 +44,9 @@ class CanvasSizeConfigWindow(QtWidgets.QDialog):
 		self.grid.addWidget(self.l1Edit, 1, 1)
 		self.grid.addWidget(self.l2, 2, 0)
 		self.grid.addWidget(self.l2Edit, 2, 1)
-		self.grid.addWidget(self.l3, 3, 0)
-		self.grid.addWidget(self.l3Edit, 3, 1)
 		self.grid.addWidget(self.pb, 4, 1)
 		self.setLayout(self.grid)
-		self.setGeometry(400, 400, 300, 350 )
+		self.setGeometry(400, 400, 200, 100 )
 		self.setWindowTitle('Canvas Size Configuration')
 		#self.show()
 		self.pb.clicked.connect(self.store_values)
@@ -60,30 +55,29 @@ class CanvasSizeConfigWindow(QtWidgets.QDialog):
 	def store_values(self):
 		self.h = int(self.l1Edit.value())
 		self.w = int(self.l2Edit.value())
-		self.resolution = int(self.l3Edit.value())
 		self.got_values.emit(1)
 		self.close()
 		return None
 
 class RectangularSourceConfigWindow(QtWidgets.QDialog):
 	got_values = QtCore.pyqtSignal(int)
-	def __init__(self, canvas):
-		super().__init__()
-
-		self.l1 = QtWidgets.QLabel('Origin X (px)')
+	def __init__(self, canvas,parent=None):
+		super(RectangularSourceConfigWindow, self).__init__(parent)
+		self.canvas = canvas
+		self.l1 = QtWidgets.QLabel('Origin X (mm)')
 		self.l1Edit = QtWidgets.QSpinBox()
 		self.l1Edit.setRange(-int(canvas.w/2),int(canvas.w/2))
 
-		self.l2 = QtWidgets.QLabel('Origin Y (px)')
+		self.l2 = QtWidgets.QLabel('Origin Y (mm)')
 		self.l2Edit = QtWidgets.QSpinBox()
 		self.l2Edit.setMaximum(canvas.h)
 		self.l2Edit.setRange(-int(canvas.h/2),int(canvas.h/2))
 
-		self.l3 = QtWidgets.QLabel('Width (px)')
+		self.l3 = QtWidgets.QLabel('Width (mm)')
 		self.l3Edit = QtWidgets.QSpinBox()
 		self.l3Edit.setRange(0,int(canvas.w))
 
-		self.l4 = QtWidgets.QLabel('Height (px)')
+		self.l4 = QtWidgets.QLabel('Height (mm)')
 		self.l4Edit = QtWidgets.QSpinBox()
 		self.l4Edit.setRange(0,int(canvas.h))
 
@@ -108,7 +102,7 @@ class RectangularSourceConfigWindow(QtWidgets.QDialog):
 		self.comboBox8 = QtWidgets.QComboBox(self)
 		self.comboBox8.addItem("1")
 		self.comboBox8.addItem("2")
-
+		self.l9 =  QtWidgets.QLabel('')
 		self.pb = QtWidgets.QPushButton()
 
 		self.pb.setText("Add Source")
@@ -130,17 +124,33 @@ class RectangularSourceConfigWindow(QtWidgets.QDialog):
 		self.grid.addWidget(self.comboBox7, 7, 1)
 		self.grid.addWidget(self.l8, 8, 0)
 		self.grid.addWidget(self.comboBox8, 8, 1)
-		self.grid.addWidget(self.pb, 9, 1)
+		self.grid.addWidget(self.pb, 9, 0)
+		self.grid.addWidget(self.l9, 9, 1)
 		self.setLayout(self.grid)
 		self.setGeometry(400, 400, 300, 500)
 		self.setWindowTitle("Rectangular Source Configuration")
 		self.pb.clicked.connect(self.store_values)
 
 		self.show()
+	# 	self.setMouseTracking(True)
+	#
+	# def mouseMoveEvent(self, event):
+	# 	if event.x() <=988 and event.y() <=758 and event.x() >=288 and event.y() >=58 and self.initialized:
+	# 		x = event.x() - 289
+	# 		y = event.y() - 59
+	# 		c = self.imageRef.pixel(x,y)
+	# 		colors = QtGui.QColor(c).getRgbF()
+	#
+	#
+	# 		self.airValLabel.setText("({})".format(int(colors[2]*255)))
+	# 		self.odor1ValLabel.setText("({})".format(int(colors[1]*255)))
+	# 		self.odor2ValLabel.setText("({})".format(int(colors[0]*255)))
 
 	def store_values(self):
-		self.x = int(self.l1Edit.value())
-		self.y = int(self.l2Edit.value())
+		self.l9.setText('  Processing...')
+		self.l9.repaint()
+		self.x = int(self.l1Edit.value()+(self.canvas.w/2))
+		self.y = -int(self.l2Edit.value())+int(self.canvas.h/2)
 		self.w = int(self.l3Edit.value())
 		self.h = int(self.l4Edit.value())
 		self.max = int(self.l5Edit.value())
@@ -175,9 +185,10 @@ class Odorscape(QtWidgets.QMainWindow, Ui_MainWindow):
 		self.setMouseTracking(True)
 
 	def mouseMoveEvent(self, event):
-		if event.x() <=988 and event.y() <=758 and event.x() >=288 and event.y() >=58 and self.initialized:
-			x = event.x() - 289
-			y = event.y() - 59
+		if event.x() <=1010 and event.y() <=762 and event.x() >=310 and event.y() >=62 and self.initialized:
+			x = event.x() - 311
+			y = event.y() - 63
+			311, 63
 			c = self.imageRef.pixel(x,y)
 			colors = QtGui.QColor(c).getRgbF()
 
@@ -204,7 +215,7 @@ class Odorscape(QtWidgets.QMainWindow, Ui_MainWindow):
 
 	def clearCanvas(self):
 		self.initializeCanvasHistory()
-		self.canvas = Canvas(self.canvasconfigwindow.w, self.canvasconfigwindow.h, self.canvasconfigwindow.resolution)
+		self.canvas = Canvas(self.canvasconfigwindow.w, self.canvasconfigwindow.h)
 		self.canvasImage = self.canvas.build_canvas()
 		self.setCanvas(self.canvasImage)
 		return None
@@ -230,7 +241,7 @@ class Odorscape(QtWidgets.QMainWindow, Ui_MainWindow):
 		self.openCanvasPath = str(fname[0])
 		pickle_in = open(self.openCanvasPath, "rb")
 		temp = pickle.load(pickle_in)
-		self.canvas = Canvas(temp.w, temp.h, temp.resolution)
+		self.canvas = Canvas(temp.w, temp.h)
 		self.canvas.airchannel = temp.airchannel
 		self.canvas.channel1 = temp.channel1
 		self.canvas.channel2 = temp.channel2
@@ -245,23 +256,39 @@ class Odorscape(QtWidgets.QMainWindow, Ui_MainWindow):
 
 		return None
 
-
 	@pyqtSlot(QImage)
 	def setCanvas(self, image):
 		image = cv2.cvtColor(image,cv2.COLOR_BGR2RGB)
 		image = image.copy()
-		qimage = QImage(image, image.shape[0], image.shape[1], QImage.Format_RGB888)
-		pixmap = QPixmap(qimage)
-		pixmap = pixmap.scaled(700,700)
-		self.imageRef = qimage.scaled(700,700)
+		self.qimage = QImage(image, image.shape[0], image.shape[1], QImage.Format_RGB888)
+		self.qimage = self.qimage.scaled(700,700)
+		pixmap = QPixmap(self.qimage)
+		#pixmap = pixmap.scaled(700,700)
+		self.imageRef = self.qimage.scaled(700,700)
 		self.canvasLabel.setPixmap(pixmap)
 		self.canvasLabel.show()
 
 	def displayCanvas(self, init=True):
 		if init:
-			self.canvas = Canvas(self.canvasconfigwindow.w, self.canvasconfigwindow.h, self.canvasconfigwindow.resolution)
+			self.canvas = Canvas(self.canvasconfigwindow.w, self.canvasconfigwindow.h)
 		self.canvasImage = self.canvas.build_canvas()
+		self.leftCanvasLabel.setText("({}, {})".format(str(round((-1*(self.canvas.w/2)/1000), 2)), 0))
+		self.topCanvasLabel.setText("({}, {})".format(0, str(round((1*(self.canvas.h/2)/1000), 2))))
+		self.rightCanvasLabel.setText("  ({}, {})".format(str(round(((self.canvas.w/2)/1000), 2)), 0))
+		self.bottomCanvasLabel.setText("({}, {})".format(0, str(round(((-1*self.canvas.h/2)/1000), 2))))
 		self.setCanvas(self.canvasImage)
+		self.setCanvas(self.canvasImage)
+		self.displayAnnotation()
+
+	def displayAnnotation(self):
+		overlay = QImage(os.getcwd()+"/assets/arrow.png")
+		overlay = overlay.scaled(50,50)
+		painter = QPainter()
+		painter.begin(self.qimage)
+		painter.drawImage(325, 325, overlay)
+		painter.end()
+		self.canvasLabel.setPixmap(QPixmap.fromImage(self.qimage))
+		self.canvasLabel.show()
 
 	def rollbackCanvas(self):
 		self.canvasImage = self.canvas.rollback_canvas()
@@ -276,6 +303,7 @@ class Odorscape(QtWidgets.QMainWindow, Ui_MainWindow):
 		self.circleconfigwindow.got_values.connect(self.addCircularGradient)
 
 	def addRectangularGradient(self):
+
 		self.rollbackPushButton.setDisabled(False)
 		x = self.rectconfigwindow.x
 		y = self.rectconfigwindow.y
@@ -307,17 +335,18 @@ class Odorscape(QtWidgets.QMainWindow, Ui_MainWindow):
 
 class CircularSourceConfigWindow(QtWidgets.QDialog):
 	got_values = QtCore.pyqtSignal(int)
-	def __init__(self, canvas):
-		super().__init__()
-		self.l1 = QtWidgets.QLabel('Origin X (px)')
+	def __init__(self, canvas,parent=None):
+		super(CircularSourceConfigWindow, self).__init__(parent)
+		self.canvas = canvas
+		self.l1 = QtWidgets.QLabel('Origin X (mm)')
 		self.l1Edit = QtWidgets.QSpinBox()
 		self.l1Edit.setRange(-int(canvas.w),int(canvas.w))
 
-		self.l2 = QtWidgets.QLabel('Origin Y (px)')
+		self.l2 = QtWidgets.QLabel('Origin Y (mm)')
 		self.l2Edit = QtWidgets.QSpinBox()
 		self.l2Edit.setRange(-int(canvas.h),int(canvas.h))
 
-		self.l3 = QtWidgets.QLabel('Radius (px)')
+		self.l3 = QtWidgets.QLabel('Radius (mm)')
 		self.l3Edit = QtWidgets.QSpinBox()
 		self.l3Edit.setMaximum(100000)
 		self.l3Edit.setMinimum(0)
@@ -336,6 +365,7 @@ class CircularSourceConfigWindow(QtWidgets.QDialog):
 		self.comboBox6 = QtWidgets.QComboBox(self)
 		self.comboBox6.addItem("1")
 		self.comboBox6.addItem("2")
+		self.l7 =  QtWidgets.QLabel('')
 
 		self.pb = QtWidgets.QPushButton()
 
@@ -354,19 +384,20 @@ class CircularSourceConfigWindow(QtWidgets.QDialog):
 		self.grid.addWidget(self.l5Edit, 5, 1)
 		self.grid.addWidget(self.l6, 7, 0)
 		self.grid.addWidget(self.comboBox6, 7, 1)
-		self.grid.addWidget(self.pb, 9, 1)
+		self.grid.addWidget(self.pb, 9, 0)
+		self.grid.addWidget(self.l7, 9, 1)
 		self.setLayout(self.grid)
 		self.setGeometry(400, 400, 300, 500)
 		self.setWindowTitle("Circular Source Configuration")
 		self.pb.clicked.connect(self.store_values)
-
-
-
 		self.show()
 
+
 	def store_values(self):
-		self.x = int(self.l1Edit.value())
-		self.y = int(self.l2Edit.value())
+		self.l7.setText('  Processing...')
+		self.l7.repaint()
+		self.x = int(self.l1Edit.value()+(self.canvas.w/2))
+		self.y = -int(self.l2Edit.value())+int(self.canvas.h/2)
 		self.r = int(self.l3Edit.value())
 		self.max = int(self.l4Edit.value())
 		self.min = int(self.l5Edit.value())

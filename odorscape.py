@@ -23,7 +23,7 @@ def cache_canvas_data(canvas, revision):
     np.save(os.path.join(os.getcwd(), 'canvas_data', "{}.npy".format(revision)), canvas)
 
 class Canvas(object):
-    def __init__(self, w=1000, h=1000, resolution=2):
+    def __init__(self, w=1000, h=1000, resolution=1):
         self.w = w
         self.h = h
         self.airchannel = 255*np.ones((h, w), dtype=np.int16)
@@ -54,11 +54,15 @@ class Canvas(object):
         patch = (1-np.sqrt(x_axis ** 2 + y_axis ** 2))*255
 
         center = np.array([r,r])
+        progCount = 0
         for i in range(2*r):
             for j in range(2*r):
                 dist = np.linalg.norm(np.array([i,j]) - center)
                 if dist >= r-1:
                     patch[i,j] = 0.
+
+                self.progBarValue = int(100*(progCount/2*r))
+                progCount+=1
 
         patch = patch.astype(np.int16)
 
