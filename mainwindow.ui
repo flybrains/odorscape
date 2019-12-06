@@ -962,7 +962,6 @@
      <string>Edit</string>
     </property>
     <addaction name="actionClearCanvas"/>
-    <addaction name="actionEdit_Edge_Policy"/>
    </widget>
    <widget class="QMenu" name="menuFile">
     <property name="title">
