@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
 import os
+import pickle
 
 def convert_canvas_to_bitmap(canvas):
     label = QLabel()
@@ -21,6 +22,20 @@ def save_canvas(canvas, canvas_address):
 
 def cache_canvas_data(canvas, revision):
     np.save(os.path.join(os.getcwd(), 'canvas_data', "{}.npy".format(revision)), canvas)
+
+class CanvasStack(object):
+    # DEFAULT = 15FPS
+    def __init__(self):
+        self.stack = []
+    def add_frame(self, frame):
+        self.stack.append(frame.build_canvas())
+    def get_stack(self):
+        return self.stack
+    def play_stack_animation(self):
+        for i in range(len(self.stack)):
+            cv2.imshow("Stack", self.stack[i])
+            cv2.waitKey(200)
+
 
 class Canvas(object):
     def __init__(self, w=1000, h=1000, resolution=1):
@@ -51,19 +66,13 @@ class Canvas(object):
 
         x_axis = np.linspace(-1, 1, 2*r)[:, None]
         y_axis = np.linspace(-1, 1, 2*r)[None, :]
-        patch = (1-np.sqrt(x_axis ** 2 + y_axis ** 2))*255
+        patch = (1-np.sqrt(x_axis ** 2 + y_axis ** 2))*max
 
-        center = np.array([r,r])
-        progCount = 0
-        for i in range(2*r):
-            for j in range(2*r):
-                dist = np.linalg.norm(np.array([i,j]) - center)
-                if dist >= r-1:
-                    patch[i,j] = 0.
-
-                self.progBarValue = int(100*(progCount/2*r))
-                progCount+=1
-
+        a, b = r, r
+        n = 2*r
+        h,w = np.ogrid[-a:n-a, -b:n-b]
+        mask = w*w + h*h <= r*r
+        patch[np.invert(mask)] = 0.
         patch = patch.astype(np.int16)
 
         # Edge Handling
@@ -124,11 +133,11 @@ class Canvas(object):
         if channel=='2':
             self.channel2[y:(y+h), x:(x+w)] += layer[:,:]
 
-
     def check_and_correct_overlap(self):
 
         composite = np.add(self.channel1, self.channel2)
         problem_row = list(np.where(composite>255)[0])
+
         problem_col = list(np.where(composite>255)[1])
         problem_coords = [[problem_row[i], problem_col[i]] for i in range(len(problem_row))]
 
@@ -152,21 +161,58 @@ class Canvas(object):
 
         return None
 
-if __name__ == "__main__":
-    canvas = Canvas(600,600)
-    canvas.add_square_gradient(200, 0, 200, 600, 255, 0, 1, maxat='top')
-    canvas.add_circular_gradient(400, 400, 100, 255, 0, 2)
-    canvas.add_circular_gradient(200, 400, 100, 255, 0, 1)
+if __name__=="__main__":
+    from tqdm import tqdm
+    stack = CanvasStack()
 
-    canvas.check_and_correct_overlap()
-    cv2.imshow('grad1', canvas.canvas)
-    cv2.waitKey(0)
+    angle_off_vertical = 24
+    dim = 600
+    rad = np.deg2rad(angle_off_vertical)
+    list_of_plume_points = [[0, int(dim/2)]]
+
+    alpha = 90
+    radius = 70
+    decay = 18
+    density = 10
+    fps = 10
+    duration = 40
 
 
 
+    for row in range(600):
+        if row%2==1:
+            lb = int(dim/2) - int(np.tan(rad)*row)
+            rb = int(dim/2) + int(np.tan(rad)*row)
+            pts = np.arange(lb, rb, 2)
+            for j in pts:
+                list_of_plume_points.append([row, j])
 
+    to_draw = {}
+    for i in tqdm(range(fps*duration)):
+        canvas = Canvas(dim,dim)
+        choices = np.random.randint(0, len(list_of_plume_points), size=density)
+        for choice in choices:
+            to_draw[choice] = decay
+        to_del = []
+        for k,v in to_draw.items():
+            if v > 0:
+                canvas.add_circular_gradient(list_of_plume_points[k][1], list_of_plume_points[k][0], radius, int(alpha*(dim-list_of_plume_points[k][0])/dim), 0, "1")
+                to_draw[k] = v-1
+                if to_draw[k]==0:
+                    to_del.append(k)
+                canvas.check_and_correct_overlap()
 
+        for f in to_del:
+            del to_draw[f]
 
+        # cv2.imshow("l", canvas.build_canvas())
+        # cv2.waitKey(0)
+        stack.add_frame(canvas)
+    stack.play_stack_animation()
+    pickle_out = open('/home/patrick/Desktop/stack4.pkl',"wb")
+    pickle.dump(stack, pickle_out)
+    pickle_out.close()
 
-
-#
+    # pickle_in = open('/home/patrick/Desktop/stack.pkl', "rb")
+    # stack = pickle.load(pickle_in)
+    # stack.play_stack_animation()
